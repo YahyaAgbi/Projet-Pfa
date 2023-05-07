@@ -1,146 +1,90 @@
-from tkinter import*
+from tkinter import *
 from PIL import ImageTk
 import tkinter.ttk as ttk
 import tkinter as tk
 import pymysql
-from tkinter import messagebox
+import io 
 
-backend=Tk()
-# Connect to MySQL database
-db = pymysql.connect(host="localhost", user="root", password="123456", database="sneakers")
-cursor = db.cursor()
 
 # Define search function
 def search():
-    search_results=tk.Toplevel(backend)
-    search_results.title('results')
+    search_results = tk.Toplevel(backend)
     search_results.geometry("500x300")
-    
-    
-    tree1=ttk.Treeview(search_results,columns=('Nom','Image','Description','Prix','Qte','Seuil','dateEntree','dateSortie'))
-    tree1.heading("#0",text="Id")
-    tree1.heading("Nom",text="Nom")
-    tree1.heading("Image",text="Image")
-    tree1.heading("Description",text="Description")
-    tree1.heading("Prix",text="Prix Unitaire")
-    tree1.heading("Qte",text="Qantite")
-    tree1.heading("Seuil",text="Sueil")
-    tree1.heading("dateEntree",text="Date d'entree")
-    tree1.heading("dateSortie",text="Date de Sortie")
-    
+    search_results.title('results')
+
+    tree1 = ttk.Treeview(search_results, columns=('Nom', 'Image', 'Description', 'Prix', 'Qte', 'Seuil', 'dateEntree', 'dateSortie'))
+    tree1.heading("#0", text="Id")
+    tree1.heading("Nom", text="Nom")
+    tree1.heading("Image", text="Image")
+    tree1.heading("Description", text="Description")
+    tree1.heading("Prix", text="Prix Unitaire")
+    tree1.heading("Qte", text="Qantite")
+    tree1.heading("Seuil", text="Seuil")
+    tree1.heading("dateEntree", text="Date d'entree")
+    tree1.heading("dateSortie", text="Date de Sortie")
+
     xscrollbar = ttk.Scrollbar(search_results, orient="horizontal", command=tree1.xview)
     tree1.configure(xscrollcommand=xscrollbar.set)
-    xscrollbar.pack(side="bottom",fill="x")
-    
-    tree1.pack()
-   
-   
-   
-   
-   
-    # Get user input
+    xscrollbar.pack(side="bottom", fill="x")
+
+    db = pymysql.connect(host="localhost", user="root", password="123456", database="sneakers")
+    mycursor = db.cursor()
+
     search_query = searchEntry.get()
 
-    # Execute the first query
-    query = f"SELECT * FROM adidas WHERE Nom LIKE '%{search_query}%'"
-    cursor.execute(query)
-    results1 = cursor.fetchall()
+    # Name:
+    tree1.delete(*tree1.get_children())
+    query = f"SELECT * FROM product WHERE Nom LIKE '%{search_query}%'"
+    mycursor.execute(query)
+    result1 = mycursor.fetchall()
+
+    for row in result1:
+        tree1.insert("", "end", text=row[0], values=row[1:])
+
+    # Prix:
+    if search_query.isdigit():
+        query = f"SELECT * FROM product WHERE Prix={search_query}"
+    else:
+        query = f"SELECT * FROM product WHERE Prix='{search_query}'"
+    mycursor.execute(query)
+    result2 = mycursor.fetchall()
+
+    for row in result2:
+        tree1.insert("", "end", text=row[0], values=row[1:])
+
+    # Qte:
+    if search_query.isdigit():
+        query = f"SELECT * FROM product WHERE Qte={search_query}"
+    else:
+        query = f"SELECT * FROM product WHERE Qte='{search_query}'"
+    mycursor.execute(query)
+    result3 = mycursor.fetchall()
+
+    for row in result3:
+        tree1.insert("", "end", text=row[0], values=row[1:])
+
+    tree1.pack()
+    tree1.configure(height=20)
     
+
+    search_results.mainloop()
     
-    # Execute the second query
-    query = f"SELECT * FROM northface WHERE Nom LIKE '%{search_query}%'"
-    cursor.execute(query)
-    results2 = cursor.fetchall()
-
-    query = f"SELECT * FROM Nike WHERE Nom LIKE '%{search_query}%'"
-    cursor.execute(query)
-    results3 = cursor.fetchall()
-    
-    query = f"SELECT * FROM Puma WHERE Nom LIKE '%{search_query}%'"
-    cursor.execute(query)
-    results4= cursor.fetchall()
-    
-    
-    query = f"SELECT * FROM adidas WHERE prix_unitaire = '{search_query}'"
-    cursor.execute(query)
-    results5 = cursor.fetchall()
-    
-    query = f"SELECT * FROM northface WHERE prix_unitaire ='{search_query}'"
-    cursor.execute(query)
-    results6 = cursor.fetchall()
-
-    query = f"SELECT * FROM Nike WHERE prix_unitaire = '{search_query}'"
-    cursor.execute(query)
-    results7 = cursor.fetchall()
-    query = f"SELECT * FROM Puma WHERE prix_unitaire = '{search_query}'"
-    cursor.execute(query)
-    results8 = cursor.fetchall()
-    
-    query = f"SELECT * FROM adidas WHERE Qte = '{search_query}'"
-    cursor.execute(query)
-    results9 = cursor.fetchall()
-    
-    query = f"SELECT * FROM northface WHERE Qte ='{search_query}'"
-    cursor.execute(query)
-    results10 = cursor.fetchall()
-
-    query = f"SELECT * FROM Nike WHERE Qte = '{search_query}'"
-    cursor.execute(query)
-    results11 = cursor.fetchall()
-    query = f"SELECT * FROM Puma WHERE Qte = '{search_query}'"
-    cursor.execute(query)
-    results12 = cursor.fetchall()
-    # Clear the existing rows in the table
-    for row in tree1.get_children():
-        tree1.delete(row)
-
-# Display the results from the first query in the table
-    for row in results1:
-       tree1.insert("", "end",text=row[0],values=row[1:9])
-
-# Display the results from the second query in the table
-
-    for row in results2:
-        tree1.insert("", "end",text=row[0],values=row[1:9])
-    for row in results3:
-        tree1.insert("", "end",text=row[0],values=row[1:9])
-    for row in results4:
-        tree1.insert("", "end",text=row[0],values=row[1:9])
-    for row in results5:
-        tree1.insert("", "end",text=row[0],values=row[1:9])
-    for row in results6:
-        tree1.insert("", "end",text=row[0],values=row[1:9])
-    for row in results7:
-        tree1.insert("", "end",text=row[0],values=row[1:9])
-    for row in results8:
-        tree1.insert("", "end",text=row[0],values=row[1:9])    
-    for row in results9:
-        tree1.insert("", "end",text=row[0],values=row[1:9])
-    for row in results10:
-        tree1.insert("", "end",text=row[0],values=row[1:9])
-    for row in results11:
-        tree1.insert("", "end",text=row[0],values=row[1:9])
-    for row in results12:
-        tree1.insert("", "end",text=row[0],values=row[1:9])  
-    search_results.mainloop()     
-
-
-
-
-
-
 
 def search_Entry(event):
-     if searchEntry.get()=='Search preference : ':
-       searchEntry.delete(0,END)
+    if searchEntry.get()=="Search preference":
+         searchEntry.delete(0,END)
+
+
 def NF():
+    
    NF = tk.Toplevel()
    NF.geometry("700x400")
    NF.title('North Face')
+   
    style = ttk.Style()
    style.configure("Treeview", background="#8B8B83", fieldbackground="green")
-   style = ttk.Style()
-   style.configure("Treeview", background="#8B8B83", fieldbackground="#8B8B83")
+
+   
 # Set the headings of the columns
    tree=ttk.Treeview(NF,columns=('Nom','Image','Description','Prix','Qte','Seuil','dateEntree','dateSortie'))
    tree.heading("#0",text="ID")
@@ -155,15 +99,21 @@ def NF():
    xscrollbar = ttk.Scrollbar(NF, orient="horizontal", command=tree.xview)
    tree.configure(xscrollcommand=xscrollbar.set)
    xscrollbar.pack(side="bottom",fill="x")
+
    
    conn = pymysql.connect(host='localhost',user='root',password='123456',database='Sneakers')
    mycursor = conn.cursor()
-   query = 'SELECT * FROM northface'
+   
+   
+   query ="SELECT * FROM product where Nom ='North Face'"
    mycursor.execute(query)
    rows = mycursor.fetchall()
+   
    for row in rows:
-    tree.insert("", END, text=row[0], values=row[1:])
-    tree.pack()
+      tree.insert("",END, text=row[0], values=row[1:])
+      
+   tree.pack()
+   tree.config(height=20)
    NF.mainloop()            
 
 def Puma():
@@ -184,6 +134,7 @@ def Puma():
    tree.heading("Seuil",text="Sueil")
    tree.heading("dateEntree",text="Date d'entree")
    tree.heading("dateSortie",text="Date de Sortie")
+   
    xscrollbar = ttk.Scrollbar(Puma, orient="horizontal", command=tree.xview)
    tree.configure(xscrollcommand=xscrollbar.set)
    xscrollbar.pack(side="bottom",fill="x")
@@ -194,7 +145,7 @@ def Puma():
    
    conn = pymysql.connect(host='localhost',user='root',password='123456',database='Sneakers')
    mycursor = conn.cursor()
-   query = 'SELECT * FROM puma'
+   query = "SELECT * FROM product where Nom ='puma'"
    mycursor.execute(query)
    rows = mycursor.fetchall()
    for row in rows:
@@ -213,28 +164,28 @@ def Adidas():
    style = ttk.Style()
    style.configure("Treeview", background="#8B8B83", fieldbackground="#8B8B83")
 #Set the headings of the columns
-   tree=ttk.Treeview(Adidas,columns=('Nom','Image','Description','Prix_Unitaire','Qte','Seuil','dateEntree','dateSortie'))
-   tree.heading("#0",text="ID")
-   tree.heading("Nom",text="Nom")
-   tree.heading("Image",text="Image") 
-   tree.heading("Description",text="Description")
-   tree.heading("Prix_Unitaire",text="Prix Unitaire")
-   tree.heading("Qte",text="Qantite")
-   tree.heading("Seuil",text="Sueil")
-   tree.heading("dateEntree",text="Date d'entree")
-   tree.heading("dateSortie",text="Date de Sortie")
-   xscrollbar = ttk.Scrollbar(Adidas, orient="horizontal", command=tree.xview)
-   tree.configure(xscrollcommand=xscrollbar.set)
+   tree1=ttk.Treeview(Adidas,columns=('Nom','Image','Description','Prix_Unitaire','Qte','Seuil','dateEntree','dateSortie'))
+   tree1.heading("#0",text="ID")
+   tree1.heading("Nom",text="Nom")
+   tree1.heading("Image",text="Image") 
+   tree1.heading("Description",text="Description")
+   tree1.heading("Prix_Unitaire",text="Prix Unitaire")
+   tree1.heading("Qte",text="Qantite")
+   tree1.heading("Seuil",text="Sueil")
+   tree1.heading("dateEntree",text="Date d'entree")
+   tree1.heading("dateSortie",text="Date de Sortie")
+   xscrollbar = ttk.Scrollbar(Adidas, orient="horizontal", command=tree1.xview)
+   tree1.configure(xscrollcommand=xscrollbar.set)
    xscrollbar.pack(side="bottom",fill="x")
    
    conn = pymysql.connect(host='localhost',user='root',password='123456',database='Sneakers')
    mycursor = conn.cursor()
-   query = 'SELECT * FROM adidas'
+   query = "SELECT * from product where Nom='adidas'"
    mycursor.execute(query)
    rows = mycursor.fetchall()
    for row in rows:
-    tree.insert("",'end', text=row[0], values=row[1:])
-    tree.pack()
+    tree1.insert("",'end', text=row[0], values=row[1:])
+    tree1.pack()
    Adidas.mainloop()     
        
 def nike():
@@ -265,34 +216,37 @@ def nike():
 # Add some items to the Treeview
   conn = pymysql.connect(host='localhost',user='root',password='123456',database='Sneakers')
   mycursor = conn.cursor()
-  query = 'SELECT * FROM nike'
+  query = "SELECT * FROM product where Nom='Nike'"
   mycursor.execute(query)
   rows = mycursor.fetchall()
   for row in rows:
     tree.insert("", END, text=row[0], values=row[1:])
 
   tree.pack()
+  tree.configure(height=20)
   
 
   nike.mainloop()
 
-
+backend=Tk()
+backend.resizable(0,0)
+backend.title('Store Info')
 
 imagebg=ImageTk.PhotoImage(file='Pic3.jpg')    
 imagebgLabel=Label(backend,image=imagebg)
 imagebgLabel.pack()
-backend.resizable(0,0)
-backend.title('Store Info')
+
+
 
 
 
 #search info 
-searchEntry=Entry(backend,width='20',font=('Cambria',20,'bold'))
-searchEntry.insert(0,'Search preference : ')
-searchEntry.place(x=120,y=80)
+searchEntry=tk.Entry(backend,font=('Cambria',26,'bold'))
+searchEntry.place(x=105,y=80)
+searchEntry.insert(0,'Search preference')
 searchEntry.bind('<FocusIn>',search_Entry)
 #search button
-searchButton=Button(backend,text='Search',bd=0,bg='#8B8B83',fg='Black',activebackground='yellow',cursor='hand2',font=('Cambria',16,'bold'),command=search)
+searchButton=tk.Button(backend,text='Search',bd=0,bg='#8B8B83',fg='Black',activebackground='yellow',cursor='hand2',font=('Cambria',18,'bold'),command=search)
 searchButton.place(x=450,y=80)
 
 #search images 1 = NIKE 
